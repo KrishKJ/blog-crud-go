@@ -1,0 +1,129 @@
+basePath: /
+definitions:
+  main.BlogPost:
+    properties:
+      body:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  main.BlogPostInput:
+    properties:
+      body:
+        type: string
+      description:
+        type: string
+      title:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Blog CRUD API with Go-Fiber
+  title: Blog CRUD APIs
+  version: "1.0"
+paths:
+  /api/blog-post:
+    get:
+      description: Retrieve all blog posts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.BlogPost'
+            type: array
+      summary: Get all blog posts
+      tags:
+      - blog
+    post:
+      consumes:
+      - application/json
+      description: Add a new blog post
+      parameters:
+      - description: Blog Post
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/main.BlogPostInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.BlogPost'
+      summary: Create a blog post
+      tags:
+      - blog
+  /api/blog-post/{id}:
+    delete:
+      description: Remove a blog post by ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a blog post
+      tags:
+      - blog
+    get:
+      description: Retrieve a blog post by ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.BlogPost'
+      summary: Get a blog post
+      tags:
+      - blog
+    patch:
+      consumes:
+      - application/json
+      description: Update a blog post by ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Post
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/main.BlogPostInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.BlogPost'
+      summary: Update a blog post
+      tags:
+      - blog
+swagger: "2.0"

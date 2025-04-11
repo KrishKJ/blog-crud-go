@@ -1,13 +1,22 @@
+// @title           Blog CRUD APIs
+// @version         1.0
+// @description     Blog CRUD API with Go-Fiber
+// @host            localhost:3000
+// @BasePath        /
+
 package main
 
 import (
 	"database/sql"
 	"log"
+
 	// "os"
 	"time"
+	_ "blog-crud-api/docs" // swagger docs
 
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/lib/pq"
+	"github.com/swaggo/fiber-swagger" // swagger handler
 )
 
 // BlogPost represents the data model (Single Responsibility: represents blog post structure only)
@@ -18,6 +27,13 @@ type BlogPost struct {
 	Body        string    `json:"body"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// BlogPostInput represents input parameters for creating blog post, separate struct provides clarity for swagger implementation
+type BlogPostInput struct {
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Body        string    `json:"body"`
 }
 
 // BlogRepository handles DB interactions (Single Responsibility)
@@ -111,6 +127,15 @@ func connectDB() *sql.DB {
 	return db
 }
 
+// createPost godoc
+// @Summary Create a blog post
+// @Description Add a new blog post
+// @Tags blog
+// @Accept json
+// @Produce json
+// @Param post body BlogPostInput true "Blog Post"
+// @Success 201 {object} BlogPost
+// @Router /api/blog-post [post]
 // createPost handles HTTP POST request (Interface Segregation: interacts via fiber)
 func createPost(c *fiber.Ctx) error {
 	post := new(BlogPost)
@@ -123,6 +148,14 @@ func createPost(c *fiber.Ctx) error {
 	return c.Status(201).JSON(post)
 }
 
+// getAllPosts godoc
+// @Summary      Get all blog posts
+// @Description  Retrieve all blog posts
+// @Tags         blog
+// @Produce      json
+// @Success      200 {array} BlogPost
+// @Router       /api/blog-post [get]
+// getAllPosts to get all the posts at once
 func getAllPosts(c *fiber.Ctx) error {
 	posts, err := repo.GetAllBlogPosts()
 	if err != nil {
@@ -131,6 +164,15 @@ func getAllPosts(c *fiber.Ctx) error {
 	return c.JSON(posts)
 }
 
+// getPost godoc
+// @Summary      Get a blog post
+// @Description  Retrieve a blog post by ID
+// @Tags         blog
+// @Produce      json
+// @Param        id path int true "Post ID"
+// @Success      200 {object} BlogPost
+// @Router       /api/blog-post/{id} [get]
+// getPost function to get a single post
 func getPost(c *fiber.Ctx) error {
 	id := c.Params("id")
 	post, err := repo.GetBlogPost(id)
@@ -140,6 +182,14 @@ func getPost(c *fiber.Ctx) error {
 	return c.JSON(post)
 }
 
+// deletePost godoc
+// @Summary      Delete a blog post
+// @Description  Remove a blog post by ID
+// @Tags         blog
+// @Param        id path int true "Post ID"
+// @Success      204
+// @Router       /api/blog-post/{id} [delete]
+// deletePost: Function to delete a post
 func deletePost(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if err := repo.DeleteBlogPost(id); err != nil {
@@ -148,6 +198,17 @@ func deletePost(c *fiber.Ctx) error {
 	return c.SendStatus(204)
 }
 
+// updatePost godoc
+// @Summary      Update a blog post
+// @Description  Update a blog post by ID
+// @Tags         blog
+// @Accept       json
+// @Produce      json
+// @Param        id path int true "Post ID"
+// @Param        post body BlogPostInput true "Updated Post"
+// @Success      200 {object} BlogPost
+// @Router       /api/blog-post/{id} [patch]
+// updatePost: Function to update a post
 func updatePost(c *fiber.Ctx) error {
 	id := c.Params("id")
 	post := new(BlogPost)
@@ -172,6 +233,8 @@ func main() {
 	app.Get("/api/blog-post/:id", getPost)
 	app.Delete("/api/blog-post/:id", deletePost)
 	app.Patch("/api/blog-post/:id", updatePost)
+	app.Get("/swagger/*", fiberSwagger.WrapHandler)
+
 
 	log.Fatal(app.Listen(":3000"))
 }
